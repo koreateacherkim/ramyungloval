@@ -22,11 +22,12 @@
             box-shadow: 0 0 0 4px #fbbf24;
             border-color: #fbbf24;
         }
-        .topping-checkbox:checked + label, .egg-radio:checked + label {
+        .topping-checkbox:checked + label, .egg-radio:checked + label, .cooktop-radio:checked + label {
             transform: scale(1.05);
         }
         .topping-checkbox:checked + label { background-color: #f59e0b; color: white; border-color: #f59e0b; }
         .egg-radio:checked + label { background-color: #ea580c; color: white; border-color: #ea580c; }
+        .cooktop-radio:checked + label { background-color: #16a34a; color: white; border-color: #16a34a; }
         .timer-display { font-size: clamp(4rem, 20vw, 8rem); line-height: 1; }
         
         @keyframes pulse-attention {
@@ -59,13 +60,27 @@
         <main class="lg:flex lg:gap-8">
             <!-- Left Column: Selections -->
             <div class="lg:w-1/2 space-y-8">
+                <section id="cooktop-selection" class="bg-zinc-800 p-6 rounded-2xl shadow-lg">
+                    <h2 id="cooktop-select-title" class="text-2xl font-bold mb-4 border-b-2 border-zinc-700 pb-2">1. 조리도구를 선택하세요</h2>
+                    <div class="flex gap-4 justify-center">
+                        <div>
+                            <input type="radio" id="cooktop-gas" name="cooktop" value="gas" class="hidden cooktop-radio" checked>
+                            <label id="label-gas-stove" for="cooktop-gas" class="cursor-pointer block text-center py-2 px-6 rounded-full border-2 border-zinc-500 transition-all">가스레인지 🔥</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="cooktop-induction" name="cooktop" value="induction" class="hidden cooktop-radio">
+                            <label id="label-induction" for="cooktop-induction" class="cursor-pointer block text-center py-2 px-6 rounded-full border-2 border-zinc-500 transition-all">인덕션 ⚡</label>
+                        </div>
+                    </div>
+                </section>
+                
                 <section id="ramen-selection" class="bg-zinc-800 p-6 rounded-2xl shadow-lg">
-                    <h2 id="ramen-select-title" class="text-2xl font-bold mb-4 border-b-2 border-zinc-700 pb-2">1. 조리할 라면을 선택하세요</h2>
+                    <h2 id="ramen-select-title" class="text-2xl font-bold mb-4 border-b-2 border-zinc-700 pb-2">2. 조리할 라면을 선택하세요</h2>
                     <div id="ramen-list" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
                 </section>
 
                 <section id="topping-selection" class="bg-zinc-800 p-6 rounded-2xl shadow-lg hidden">
-                    <h2 id="topping-select-title" class="text-2xl font-bold mb-4 border-b-2 border-zinc-700 pb-2">2. 추가할 토핑을 선택하세요</h2>
+                    <h2 id="topping-select-title" class="text-2xl font-bold mb-4 border-b-2 border-zinc-700 pb-2">3. 추가할 토핑을 선택하세요</h2>
                     <div id="toppings" class="flex flex-wrap gap-3">
                         <div><input type="checkbox" id="topping-ricecake" class="hidden topping-checkbox" data-topping="ricecake"><label id="label-ricecake" for="topping-ricecake" class="cursor-pointer block text-center py-2 px-4 rounded-full border-2 border-zinc-600 transition-all">떡국떡 🍚</label></div>
                         <div><input type="checkbox" id="topping-scallion" class="hidden topping-checkbox" data-topping="scallion"><label id="label-scallion" for="topping-scallion" class="cursor-pointer block text-center py-2 px-4 rounded-full border-2 border-zinc-600 transition-all">파 🌿</label></div>
@@ -113,7 +128,8 @@
         ko: {
             // UI
             "app-title": "🍜 라면 타이머", "app-subtitle": "단계별로 따라하는 완벽한 라면 조리법",
-            "ramen-select-title": "1. 조리할 라면을 선택하세요", "topping-select-title": "2. 추가할 토핑을 선택하세요",
+            "cooktop-select-title": "1. 조리도구를 선택하세요", "label-gas-stove": "가스레인지 🔥", "label-induction": "인덕션 ⚡",
+            "ramen-select-title": "2. 조리할 라면을 선택하세요", "topping-select-title": "3. 추가할 토핑을 선택하세요",
             "label-ricecake": "떡국떡 🍚", "label-scallion": "파 🌿", "label-cheese": "치즈 🧀", "label-egg": "계란 🥚",
             "egg-doneness-title": "계란 익힘 정도:", "label-soft-egg": "반숙", "label-hard-egg": "완숙",
             "action-btn-start": "시작", "action-btn-cooking": "조리 중...", "next-btn": "다음 단계", "reset-btn": "초기화",
@@ -135,6 +151,7 @@
             cook_mix_sauce: '소스와 비벼 맛있게 드세요!',
             cook_pour_hot_water: (water) => `${water}까지 뜨거운 물을 부어주세요.`,
             cook_wait_3_min: '3분간 기다려주세요.',
+            cook_keep_boiling: '계속 끓여주세요.',
             
             // Toppings & Finish
             topping_add_ricecake: '떡을 지금 넣어주세요! 🍚',
@@ -146,7 +163,8 @@
         },
         en: {
             "app-title": "🍜 Ramen Timer", "app-subtitle": "The perfect step-by-step ramen guide",
-            "ramen-select-title": "1. Select your ramen", "topping-select-title": "2. Choose your toppings",
+            "cooktop-select-title": "1. Select your cooktop", "label-gas-stove": "Gas Stove 🔥", "label-induction": "Induction ⚡",
+            "ramen-select-title": "2. Select your ramen", "topping-select-title": "3. Choose your toppings",
             "label-ricecake": "Rice Cake 🍚", "label-scallion": "Scallion 🌿", "label-cheese": "Cheese 🧀", "label-egg": "Egg 🥚",
             "egg-doneness-title": "Egg doneness:", "label-soft-egg": "Soft-boiled", "label-hard-egg": "Hard-boiled",
             "action-btn-start": "Start", "action-btn-cooking": "Cooking...", "next-btn": "Next Step", "reset-btn": "Reset",
@@ -166,7 +184,8 @@
             cook_mix_sauce: 'Mix with sauce and enjoy!',
             cook_pour_hot_water: (water) => `Pour hot water up to the ${water}.`,
             cook_wait_3_min: 'Wait for 3 minutes.',
-            
+            cook_keep_boiling: 'Keep boiling.',
+
             topping_add_ricecake: 'Add rice cakes now! 🍚',
             topping_add_egg: (type) => `Add ${type} egg now! 🥚`,
             topping_egg_hard: 'hard-boiled', topping_egg_soft: 'soft-boiled',
@@ -176,7 +195,8 @@
         },
         ja: {
             "app-title": "🍜 ラーメンタイマー", "app-subtitle": "ステップバイステップで完璧なラーメン作り",
-            "ramen-select-title": "1. ラーメンを選んでください", "topping-select-title": "2. トッピングを選んでください",
+            "cooktop-select-title": "1.調理器具を選んでください", "label-gas-stove": "ガスコンロ 🔥", "label-induction": "IH調理器 ⚡",
+            "ramen-select-title": "2. ラーメンを選んでください", "topping-select-title": "3. トッピングを選んでください",
             "label-ricecake": "トック 🍚", "label-scallion": "ネギ 🌿", "label-cheese": "チーズ 🧀", "label-egg": "卵 🥚",
             "egg-doneness-title": "卵の固さ:", "label-soft-egg": "半熟", "label-hard-egg": "固ゆで",
             "action-btn-start": "スタート", "action-btn-cooking": "調理中...", "next-btn": "次のステップ", "reset-btn": "リセット",
@@ -196,6 +216,7 @@
             cook_mix_sauce: 'ソースと混ぜてお召し上がりください！',
             cook_pour_hot_water: (water) => `${water}までお湯を注いでください。`,
             cook_wait_3_min: '3分間待ちます。',
+            cook_keep_boiling: '続けて煮込んでください。',
 
             topping_add_ricecake: '今すぐトックを入れてください！ 🍚',
             topping_add_egg: (type) => `今すぐ${type}卵を入れてください！ 🥚`,
@@ -206,7 +227,8 @@
         },
         zh: {
             "app-title": "🍜 拉面计时器", "app-subtitle": "分步完美的拉面指南",
-            "ramen-select-title": "1. 选择您的拉面", "topping-select-title": "2. 选择您的配料",
+            "cooktop-select-title": "1. 选择您的炊具", "label-gas-stove": "燃气灶 🔥", "label-induction": "电磁炉 ⚡",
+            "ramen-select-title": "2. 选择您的拉面", "topping-select-title": "3. 选择您的配料",
             "label-ricecake": "年糕 🍚", "label-scallion": "葱 🌿", "label-cheese": "芝士 🧀", "label-egg": "鸡蛋 🥚",
             "egg-doneness-title": "鸡蛋熟度:", "label-soft-egg": "溏心", "label-hard-egg": "全熟",
             "action-btn-start": "开始", "action-btn-cooking": "烹饪中...", "next-btn": "下一步", "reset-btn": "重置",
@@ -226,6 +248,7 @@
             cook_mix_sauce: '与酱汁混合即可享用！',
             cook_pour_hot_water: (water) => `加热水至${water}。`,
             cook_wait_3_min: '等待3分钟。',
+            cook_keep_boiling: '继续煮。',
 
             topping_add_ricecake: '现在加入年糕！ 🍚',
             topping_add_egg: (type) => `现在加入${type}鸡蛋！ 🥚`,
@@ -236,7 +259,8 @@
         },
         es: {
             "app-title": "🍜 Temporizador de Ramen", "app-subtitle": "La guía perfecta de ramen paso a paso",
-            "ramen-select-title": "1. Selecciona tu ramen", "topping-select-title": "2. Elige tus toppings",
+            "cooktop-select-title": "1. Selecciona tu cocina", "label-gas-stove": "Cocina de gas 🔥", "label-induction": "Inducción ⚡",
+            "ramen-select-title": "2. Selecciona tu ramen", "topping-select-title": "3. Elige tus toppings",
             "label-ricecake": "Pastel de arroz 🍚", "label-scallion": "Cebolleta 🌿", "label-cheese": "Queso 🧀", "label-egg": "Huevo 🥚",
             "egg-doneness-title": "Cocción del huevo:", "label-soft-egg": "Pasado por agua", "label-hard-egg": "Huevo duro",
             "action-btn-start": "Empezar", "action-btn-cooking": "Cocinando...", "next-btn": "Siguiente", "reset-btn": "Reiniciar",
@@ -256,6 +280,7 @@
             cook_mix_sauce: '¡Mezclar con la salsa y disfrutar!',
             cook_pour_hot_water: (water) => `Verter agua caliente hasta la ${water}.`,
             cook_wait_3_min: 'Esperar 3 minutos.',
+            cook_keep_boiling: 'Sigue hirviendo.',
 
             topping_add_ricecake: '¡Añade los pasteles de arroz ahora! 🍚',
             topping_add_egg: (type) => `¡Añade el huevo ${type} ahora! 🥚`,
@@ -266,7 +291,8 @@
         },
         de: {
             "app-title": "🍜 Ramen-Timer", "app-subtitle": "Die perfekte Schritt-für-Schritt-Anleitung für Ramen",
-            "ramen-select-title": "1. Wähle dein Ramen", "topping-select-title": "2. Wähle deine Toppings",
+            "cooktop-select-title": "1. Wähle dein Kochfeld", "label-gas-stove": "Gasherd 🔥", "label-induction": "Induktion ⚡",
+            "ramen-select-title": "2. Wähle dein Ramen", "topping-select-title": "3. Wähle deine Toppings",
             "label-ricecake": "Reiskuchen 🍚", "label-scallion": "Frühlingszwiebel 🌿", "label-cheese": "Käse 🧀", "label-egg": "Ei 🥚",
             "egg-doneness-title": "Ei-Garstufe:", "label-soft-egg": "Weich gekocht", "label-hard-egg": "Hart gekocht",
             "action-btn-start": "Start", "action-btn-cooking": "Kochen...", "next-btn": "Nächster Schritt", "reset-btn": "Zurücksetzen",
@@ -286,6 +312,7 @@
             cook_mix_sauce: 'Mit Soße mischen und genießen!',
             cook_pour_hot_water: (water) => `Heißes Wasser bis zur ${water} eingießen.`,
             cook_wait_3_min: '3 Minuten warten.',
+            cook_keep_boiling: 'Weiter kochen.',
 
             topping_add_ricecake: 'Jetzt Reiskuchen hinzufügen! 🍚',
             topping_add_egg: (type) => `Jetzt ${type} Ei hinzufügen! 🥚`,
@@ -296,7 +323,8 @@
         },
         vi: {
             "app-title": "🍜 Đồng hồ bấm giờ Ramen", "app-subtitle": "Hướng dẫn nấu mì ramen hoàn hảo từng bước",
-            "ramen-select-title": "1. Chọn loại mì ramen của bạn", "topping-select-title": "2. Chọn topping của bạn",
+            "cooktop-select-title": "1. Chọn bếp nấu của bạn", "label-gas-stove": "Bếp ga 🔥", "label-induction": "Bếp từ ⚡",
+            "ramen-select-title": "2. Chọn loại mì ramen của bạn", "topping-select-title": "3. Chọn topping của bạn",
             "label-ricecake": "Bánh gạo 🍚", "label-scallion": "Hành lá 🌿", "label-cheese": "Phô mai 🧀", "label-egg": "Trứng 🥚",
             "egg-doneness-title": "Độ chín của trứng:", "label-soft-egg": "Lòng đào", "label-hard-egg": "Chín kỹ",
             "action-btn-start": "Bắt đầu", "action-btn-cooking": "Đang nấu...", "next-btn": "Bước tiếp theo", "reset-btn": "Đặt lại",
@@ -316,6 +344,7 @@
             cook_mix_sauce: 'Trộn với sốt và thưởng thức!',
             cook_pour_hot_water: (water) => `Đổ nước nóng đến ${water}.`,
             cook_wait_3_min: 'Đợi trong 3 phút.',
+            cook_keep_boiling: 'Tiếp tục đun sôi.',
 
             topping_add_ricecake: 'Bây giờ cho bánh gạo vào! 🍚',
             topping_add_egg: (type) => `Bây giờ cho trứng ${type} vào! 🥚`,
@@ -336,6 +365,7 @@
         let cookingSteps = [];
         let currentStepIndex = 0;
         let currentLang = 'ko';
+        let selectedCooktop = 'gas';
 
         // --- UI Elements ---
         const langSelector = document.getElementById('language-selector');
@@ -364,7 +394,7 @@
             samyang: { water: 550, img: '🍜', cookTime: 240 },
             jjapagetti: {
                 water: 600, img: '🍝', type: 'special', steps: [
-                    { instruction: 'cook_boil_water', duration: 0, button: 'button-next' },
+                    { instruction: 'cook_boil_water' },
                     { instruction: 'cook_add_noodles_flakes', duration: 300 },
                     { instruction: 'cook_drain_water', duration: 0, button: 'button-next' },
                     { instruction: 'cook_stir_fry', duration: 60 },
@@ -373,7 +403,7 @@
             },
             buldak: {
                 water: 600, img: '🌶️', type: 'special', steps: [
-                    { instruction: 'cook_boil_water', duration: 0, button: 'button-next' },
+                    { instruction: 'cook_boil_water' },
                     { instruction: 'cook_add_noodles', duration: 300 },
                     { instruction: 'cook_drain_water_some', duration: 0, button: 'button-next' },
                     { instruction: 'cook_stir_fry', duration: 30 },
@@ -382,7 +412,7 @@
             },
             bibim: {
                 water: 600, img: '🥗', type: 'special', steps: [
-                    { instruction: 'cook_boil_water', duration: 0, button: 'button-next' },
+                    { instruction: 'cook_boil_water' },
                     { instruction: 'cook_add_noodles', duration: 180 },
                     { instruction: 'cook_rinse_noodles', duration: 0, button: 'button-next' },
                     { instruction: 'cook_mix_sauce', duration: 0, button: 'button-complete' }
@@ -409,7 +439,6 @@
 
         function removeEmojis(text) {
             if (!text) return '';
-            // This regex covers a wide range of emojis
             return text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim();
         }
 
@@ -430,6 +459,9 @@
 
             document.getElementById('app-title').textContent = langTrans['app-title'];
             document.getElementById('app-subtitle').textContent = langTrans['app-subtitle'];
+            document.getElementById('cooktop-select-title').textContent = langTrans['cooktop-select-title'];
+            document.getElementById('label-gas-stove').textContent = langTrans['label-gas-stove'];
+            document.getElementById('label-induction').textContent = langTrans['label-induction'];
             document.getElementById('ramen-select-title').textContent = langTrans['ramen-select-title'];
             document.getElementById('topping-select-title').textContent = langTrans['topping-select-title'];
             document.getElementById('label-ricecake').textContent = langTrans['label-ricecake'];
@@ -493,12 +525,18 @@
             let waterAmount = ramenRecipes[selectedRamen].water;
             if (currentLang !== 'ko' && waterAmount === '용기 안쪽 선') waterAmount = 'line inside';
 
-            let instructionText = typeof instructionTemplate === 'function' ? instructionTemplate(waterAmount) : instructionTemplate;
+            let instructionText;
+            if (step.instruction === 'topping_add_egg') {
+                const eggTypeText = langTrans[`topping_egg_${step.eggType}`];
+                instructionText = langTrans.topping_add_egg(eggTypeText);
+            } else {
+                 instructionText = typeof instructionTemplate === 'function' ? instructionTemplate(waterAmount) : instructionTemplate;
+            }
             
             currentInstructionEl.textContent = instructionText;
             speak(instructionText);
 
-            nextBtnEl.style.display = 'inline-block'; // Always show next button during steps
+            nextBtnEl.style.display = 'inline-block';
             nextBtnEl.disabled = false;
 
             if (step.duration > 0) {
@@ -522,6 +560,16 @@
 
         // --- Event Handlers ---
         langSelector.addEventListener('change', (e) => setLanguage(e.target.value));
+        
+        document.querySelectorAll('input[name="cooktop"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                selectedCooktop = e.target.value;
+                if (selectedRamen) {
+                    generateSteps();
+                    resetState();
+                }
+            });
+        });
 
         function selectRamen(id) {
             selectedRamen = id;
@@ -534,7 +582,7 @@
             toppingSectionEl.classList.remove('hidden');
             cookingGuideSectionEl.classList.remove('hidden');
 
-            if (window.innerWidth < 1024) { // lg breakpoint
+            if (window.innerWidth < 1024) { 
                 cookingGuideSectionEl.scrollIntoView({ behavior: 'smooth' });
             }
         }
@@ -583,38 +631,65 @@
         function generateSteps() {
             const recipe = ramenRecipes[selectedRamen];
             const toppings = getSelectedToppings();
+            let baseSteps;
 
             if (recipe.type === 'special') {
-                cookingSteps = [...recipe.steps]; // Create a copy
-                return;
-            }
-            
-            let steps = [
-                { instruction: 'cook_boil_water', duration: 0, button: 'button-next' },
-                { instruction: 'cook_add_noodles_soup', duration: recipe.cookTime, isCookingStep: true }
-            ];
+                baseSteps = JSON.parse(JSON.stringify(recipe.steps));
+                const boilStep = baseSteps.find(step => step.instruction === 'cook_boil_water');
+                if (boilStep) {
+                     boilStep.duration = selectedCooktop === 'gas' ? 240 : 180;
+                }
+            } else {
+                baseSteps = [
+                    { instruction: 'cook_boil_water', duration: selectedCooktop === 'gas' ? 240 : 180 }
+                ];
 
-            let finalInstruction = toppings.cheese ? 'finish_add_cheese' : 'finish_enjoy';
-            steps.push({ instruction: finalInstruction, duration: 0, button: 'button-complete' });
-            
-            let cookingStep = steps.find(s => s.isCookingStep);
-            if (cookingStep) {
-                cookingStep.subSteps = [];
-                const langTrans = translations[currentLang];
-                if(toppings.ricecake) cookingStep.subSteps.push({ time: cookingStep.duration - 10, instruction: langTrans.topping_add_ricecake });
-                if(toppings.egg) {
+                const toppingEvents = [];
+                if (toppings.ricecake) {
+                    toppingEvents.push({ time: recipe.cookTime - 10, instruction: 'topping_add_ricecake' });
+                }
+                if (toppings.egg) {
                     const eggTime = toppings.eggType === 'hard' ? 210 : 90;
-                    if(cookingStep.duration >= eggTime) {
-                        const eggTypeText = langTrans[`topping_egg_${toppings.eggType}`];
-                        cookingStep.subSteps.push({ time: eggTime, instruction: langTrans.topping_add_egg(eggTypeText) });
+                    if (recipe.cookTime >= eggTime) {
+                        toppingEvents.push({ time: eggTime, instruction: 'topping_add_egg', eggType: toppings.eggType });
                     }
                 }
-                if(toppings.scallion) cookingStep.subSteps.push({ time: 30, instruction: langTrans.topping_add_scallion });
-                cookingStep.subSteps.sort((a,b) => b.time - a.time);
+                if (toppings.scallion) {
+                    toppingEvents.push({ time: 30, instruction: 'topping_add_scallion' });
+                }
+
+                toppingEvents.sort((a, b) => b.time - a.time);
+
+                let lastTime = recipe.cookTime;
+                let isFirstCookingSegment = true;
+
+                for (const event of toppingEvents) {
+                    const duration = lastTime - event.time;
+                    if (duration > 0) {
+                        const instruction = isFirstCookingSegment ? 'cook_add_noodles_soup' : 'cook_keep_boiling';
+                        baseSteps.push({ instruction: instruction, duration: duration });
+                        isFirstCookingSegment = false;
+                    }
+                    let step = { instruction: event.instruction, duration: 0, button: 'button-next' };
+                    if (event.eggType) {
+                        step.eggType = event.eggType;
+                    }
+                    baseSteps.push(step);
+                    lastTime = event.time;
+                }
+
+                if (lastTime > 0) {
+                    const instruction = isFirstCookingSegment ? 'cook_add_noodles_soup' : 'cook_keep_boiling';
+                    baseSteps.push({ instruction: instruction, duration: lastTime });
+                }
+                
+                let finalInstruction = toppings.cheese ? 'finish_add_cheese' : 'finish_enjoy';
+                baseSteps.push({ instruction: finalInstruction, duration: 0, button: 'button-complete' });
             }
 
-            cookingSteps = steps;
+            cookingSteps = baseSteps;
         }
+
 
         function proceedToNextStep() {
             playNotificationSound();
@@ -623,7 +698,6 @@
         }
 
         function startTimer() {
-            const subSteps = [...(cookingSteps[currentStepIndex]?.subSteps || [])];
             const langTrans = translations[currentLang];
 
             actionBtnEl.textContent = langTrans['action-btn-cooking'];
@@ -633,19 +707,13 @@
                 remainingTime--;
                 timerDisplayEl.textContent = formatTime(remainingTime);
 
-                if (subSteps.length > 0 && remainingTime === subSteps[0].time) {
-                    const subInstruction = subSteps[0].instruction;
-                    currentInstructionEl.textContent = subInstruction;
-                    speak(subInstruction);
-                    playNotificationSound();
-                    subSteps.shift();
-                }
-
                 if (remainingTime <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
                     actionBtnEl.style.display = 'none';
                     
+                    playNotificationSound();
+
                     const nextStep = cookingSteps[currentStepIndex + 1];
                     if (nextStep) {
                         const nextStepKey = nextStep.instruction;
@@ -653,6 +721,8 @@
                         const nextStepText = typeof nextStepTemplate === 'function' ? nextStepTemplate(ramenRecipes[selectedRamen].water) : nextStepTemplate;
                         speak(nextStepText);
                         setTimeout(() => nextBtnEl.classList.add('pulse-attention'), 100);
+                    } else {
+                        proceedToNextStep();
                     }
                 }
             }, 1000);
