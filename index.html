@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>라면 조리 타이머 🍜 — Split</title>
+  <style>
+    :root{--bg:#f7f7fb;--card:#fff;--text:#1f2937;--muted:#6b7280;--brand:#ff7043;--ok:#22c55e;--info:#2563eb;--accent:#7c3aed;--warn:#ef6c00}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:14px 18px;background:linear-gradient(90deg,#fff,#faf7f5)}
+    header h1{margin:0;font-size:20px}
+    header .sub{margin:4px 0 0;color:var(--muted);font-size:12px}
+
+    .wrap{display:grid;grid-template-columns: 360px 1fr;gap:12px;max-width:1200px;margin:14px auto;padding:0 12px;height:calc(100vh - 80px)}
+    @media (max-width: 960px){ .wrap{grid-template-columns:1fr;height:auto} }
+
+    .card{background:var(--card);border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.06);padding:12px}
+    .section h3{margin:6px 4px 10px;font-size:14px;color:#111827}
+    .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(110px,1fr));gap:6px}
+
+    .btn{border:0;border-radius:10px;padding:10px 10px;cursor:pointer;font-weight:700;box-shadow:0 2px 0 rgba(0,0,0,.06);transition:.08s}
+    .btn:active{transform:translateY(1px);box-shadow:none}
+    .lang{background:var(--accent);color:#fff}
+    .ramen{background:var(--brand);color:#fff}
+    .heat{background:var(--warn);color:#fff}
+    .topping{background:#10b981;color:#fff}
+    .egg{background:#059669;color:#fff}
+    .ghost{background:#e5e7eb;color:#111827}
+    .action{background:var(--info);color:#fff}
+
+    /* 선택(활성) 시각화 */
+    .selected{outline:3px solid #111827; outline-offset:1px; position:relative}
+    .selected::after{content:"✔"; position:absolute; right:8px; top:6px; font-size:12px}
+    .multi.selected{background:#16a34a;color:#fff}
+
+    /* 오른쪽 패널 */
+    .right .topbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+    .pill{padding:6px 10px;border-radius:999px;background:#eef2f7;color:#374151;font-size:12px}
+    #timer{font-size:60px;font-weight:900;letter-spacing:1px;text-align:center;margin:6px 0}
+    #output{min-height:88px;background:#f1f5f9;border-radius:12px;padding:12px;font-size:16px;line-height:1.6}
+    .controls{display:flex;justify-content:space-between;gap:8px;margin:6px 0}
+
+    details summary{cursor:pointer;font-weight:800}
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title">라면 조리 타이머 🍜</h1>
+    <p class="sub" id="dev">개발자: 가치있는미래교육연구소 대표 김병찬 · Developer: B.C. Kim</p>
+  </header>
+
+  <main class="wrap">
+    <!-- LEFT: 선택 영역 (언어 → 라면 → 가열방식 → 토핑) -->
+    <aside class="card left" id="left">
+      <div class="section">
+        <h3 id="langLabel">① 언어 선택 / TTS</h3>
+        <div class="grid" id="langButtons"></div>
+        <div style="margin-top:6px"><button class="btn ghost" id="toggleTts">🔊 TTS ON</button></div>
+      </div>
+      <div class="section">
+        <h3 id="ramenLabel">② 라면 선택</h3>
+        <div class="grid" id="ramenButtons"></div>
+      </div>
+      <div class="section">
+        <h3 id="heatLabel">③ 가열 방식</h3>
+        <div class="grid">
+          <button class="btn heat single" data-heat="gas" id="gasBtn">가스레인지</button>
+          <button class="btn heat single" data-heat="ind" id="indBtn">인덕션</button>
+        </div>
+        <p class="sub" id="heatNote">※ 인덕션은 물 끓이기 시간이 약 20% 단축</p>
+      </div>
+      <div class="section">
+        <h3 id="topLabel">④ 토핑 선택</h3>
+        <div class="grid">
+          <button class="btn topping multi" data-top="rice" id="t1">떡국떡</button>
+          <button class="btn topping multi" data-top="onion" id="t2">파</button>
+          <button class="btn topping multi" data-top="cheese" id="t3">치즈</button>
+          <button class="btn egg single" data-egg="soft" id="e1">계란 반숙</button>
+          <button class="btn egg single" data-egg="hard" id="e2">계란 완숙</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: 진행 현황 -->
+    <section class="card right">
+      <div class="topbar" id="statusRow"></div>
+      <div class="controls">
+        <div>
+          <button class="btn action" id="startBtn">시작</button>
+          <button class="btn ghost" id="pauseBtn">일시정지</button>
+          <button class="btn ghost" id="resetBtn">초기화</button>
+          <button class="btn action" id="nextBtn">다음 단계</button>
+        </div>
+        <div>
+          <button class="btn ghost" id="minus10">-10s</button>
+          <button class="btn ghost" id="plus10">+10s</button>
+        </div>
+      </div>
+      <div id="timer">00:00</div>
+      <div id="output">왼쪽에서 라면을 선택하면 여기서 단계별로 아주 자세히 안내하고, TTS로 읽어드립니다.</div>
+
+      <details style="margin-top:8px">
+        <summary id="detailSummary">세부 단계 보기</summary>
+        <ol id="stepList"></ol>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    // ===== 레시피 데이터 =====
+    const RECIPES = {
+      shin:{id:'shin', steps:[{type:'boil',sec:120,params:{water:'550 ml'}},{type:'cookSoup',sec:270,params:{desc:'면+분말스프'}},{type:'finish',sec:0}]},
+      neoguri:{id:'neoguri', steps:[{type:'boil',sec:120,params:{water:'550 ml'}},{type:'cookSoup',sec:300,params:{desc:'면+스프'}},{type:'finish',sec:0}]},
+      chapagetti:{id:'chapagetti', steps:[{type:'boil',sec:120,params:{water:'600 ml'}},{type:'cookNoodle',sec:240,params:{desc:'면'}},{type:'drainKeep',sec:0,params:{left:'5~6 큰술'}},{type:'mixDry',sec:60,params:{desc:'분말+유성스프'}},{type:'finish',sec:0}]},
+      jjawang:{id:'jjawang', steps:[{type:'boil',sec:120,params:{water:'충분히'}},{type:'cookNoodle',sec:300,params:{desc:'면'}},{type:'drainKeep',sec:0,params:{left:'5~6 큰술'}},{type:'mixDry',sec:90,params:{desc:'소스'}},{type:'finish',sec:0}]},
+      ansin:{id:'ansin', steps:[{type:'boil',sec:120,params:{water:'550 ml'}},{type:'cookSoup',sec:270,params:{desc:'면+스프'}},{type:'finish',sec:0}]},
+      buldak:{id:'buldak', steps:[{type:'boil',sec:120,params:{water:'600 ml'}},{type:'cookNoodle',sec:300,params:{desc:'면'}},{type:'drainKeep',sec:0,params:{left:'국물 8스푼'}},{type:'stirFry',sec:30,params:{desc:'액상스프'}},{type:'add',sec:0,params:{desc:'후레이크'}},{type:'finish',sec:0}]},
+      samyang:{id:'samyang', steps:[{type:'boil',sec:120,params:{water:'550 ml'}},{type:'cookSoupRange',sec:210,params:{min:'3.5',max:'4'}},{type:'finish',sec:0}]},
+      jin:{id:'jin', steps:[{type:'boil',sec:120,params:{water:'550 ml'}},{type:'cookSoup',sec:240,params:{desc:'면+스프'}},{type:'finish',sec:0}]},
+      bibim:{id:'bibim', steps:[{type:'boil',sec:120,params:{water:'충분히'}},{type:'cookNoodle',sec:210,params:{desc:'면'}},{type:'rinseCold',sec:30,params:{}},{type:'mixDry',sec:30,params:{desc:'비빔소스'}},{type:'finish',sec:0}]},
+      wang:{id:'wang', steps:[{type:'pourCup',sec:0,params:{water:'표시선'}},{type:'wait',sec:210,params:{desc:'뚜껑 닫기'}},{type:'finish',sec:0}]}
+    };
+
+    // ===== 번역 사전 =====
+    const I18N={
+      'ko-KR':{title:'라면 조리 타이머 🍜',dev:'개발자: 가치있는미래교육연구소 대표 김병찬 · Developer: B.C. Kim',
+        labels:{lang:'① 언어 선택 / TTS',ramen:'② 라면 선택',heat:'③ 가열 방식',topping:'④ 토핑 선택',progress:'진행 현황',detail:'세부 단계 보기',heatNote:'※ 인덕션은 물 끓이기 시간이 약 20% 단축'},
+        ui:{ start:'시작', pause:'일시정지', reset:'초기화', next:'다음 단계', done:'완료!', step:'현재 단계', ttsOn:'🔊 TTS ON', ttsOff:'🔇 TTS OFF' },
+        heat:{gas:'가스레인지',ind:'인덕션'}, toppings:{rice:'떡국떡',onion:'파',cheese:'치즈',soft:'계란 반숙',hard:'계란 완숙'},
+        ramenNames:{shin:'신라면',neoguri:'너구리',chapagetti:'짜파게티',jjawang:'짜왕',ansin:'안성탕면',buldak:'불닭볶음면',samyang:'삼양라면',jin:'진라면',bibim:'비빔면',wang:'왕뚜껑'},
+        step:{ boil:w=>`물 ${w.water||''} 끓이기`, cookSoup:p=>`${p.desc} 넣고 끓이기`, cookSoupRange:p=>`면+스프 끓이기 (${p.min}~${p.max}분)`, cookNoodle:p=>`${p.desc} 삶기`, drainKeep:p=>`물을 버리고 ${p.left} 남기기`, mixDry:p=>`${p.desc} 넣고 비비기`, stirFry:p=>`${p.desc} 넣고 볶기`, rinseCold:()=>`찬물에 헹구기`, add:p=>`${p.desc} 넣기`, pourCup:()=>`표시선까지 뜨거운 물 붓기`, wait:()=>`기다리기 (뚜껑 닫기)`, finish:()=>`완성! 그릇에 담아 토핑을 올리세요.` }, egg:{soft:'반숙은 끓기 2~3분 후 투입', hard:'완숙은 초반에 투입'}
+      },
+      'en-US':{title:'Ramen Cooking Timer 🍜',dev:'Developer: B.C. Kim',
+        labels:{lang:'① Select Language / TTS',ramen:'② Select Ramen',heat:'③ Heat Source',topping:'④ Select Toppings',progress:'Progress',detail:'Show steps',heatNote:'※ Induction reduces boiling time by ~20%'},
+        ui:{ start:'Start', pause:'Pause', reset:'Reset', next:'Next Step', done:'Done!', step:'Current Step', ttsOn:'🔊 TTS ON', ttsOff:'🔇 TTS OFF' },
+        heat:{gas:'Gas Stove',ind:'Induction'}, toppings:{rice:'Rice Cake',onion:'Green Onion',cheese:'Cheese',soft:'Soft-boiled Egg',hard:'Hard-boiled Egg'},
+        ramenNames:{shin:'Shin Ramyun',neoguri:'Neoguri',chapagetti:'Chapagetti',jjawang:'Jjawang',ansin:'Anseongtangmyun',buldak:'Buldak Hot Chicken',samyang:'Samyang Ramen',jin:'Jin Ramen',bibim:'Bibim Men',wang:'King Lid (Cup)'} ,
+        step:{ boil:w=>`Boil ${w.water||''} of water`, cookSoup:p=>`Add ${p.desc} and cook`, cookSoupRange:p=>`Cook noodles + soup (${p.min}–${p.max} min)`, cookNoodle:p=>`Cook ${p.desc}`, drainKeep:p=>`Drain, keep ${p.left} water`, mixDry:p=>`Add ${p.desc} and mix`, stirFry:p=>`Add ${p.desc} and stir-fry`, rinseCold:()=>`Rinse with cold water`, add:p=>`Add ${p.desc}`, pourCup:()=>`Pour hot water to the line`, wait:()=>`Wait with lid closed`, finish:()=>`Serve and add toppings.` }, egg:{soft:'Soft-boiled: add 2–3 min after boiling', hard:'Hard-boiled: add at the start'}
+      },
+      'zh-CN':{title:'拉面烹饪计时器 🍜',dev:'开发者: B.C. Kim',
+        labels:{lang:'① 选择语言 / 语音',ramen:'② 选择拉面',heat:'③ 加热方式',topping:'④ 选择配料',progress:'进度',detail:'查看步骤',heatNote:'※ 电磁炉煮沸时间约缩短20%'},
+        ui:{ start:'开始', pause:'暂停', reset:'重置', next:'下一步', done:'完成!', step:'当前步骤', ttsOn:'🔊语音开', ttsOff:'🔇语音关' },
+        heat:{gas:'燃气灶',ind:'电磁炉'}, toppings:{rice:'年糕片',onion:'葱',cheese:'奶酪',soft:'溏心蛋',hard:'全熟蛋'},
+        ramenNames:{shin:'辛拉面',neoguri:'乌龙面(Neoguri)',chapagetti:'炸酱面(Chapagetti)',jjawang:'짜왕',ansin:'安城汤面',buldak:'火鸡面',samyang:'三养拉面',jin:'真拉面',bibim:'拌面',wang:'王盖杯面'},
+        step:{ boil:w=>`煮沸 ${w.water||''} 水`, cookSoup:p=>`加入${p.desc}煮`, cookSoupRange:p=>`煮面+调料 (${p.min}–${p.max}分)`, cookNoodle:p=>`煮${p.desc}`, drainKeep:p=>`倒掉水，留 ${p.left}`, mixDry:p=>`加入${p.desc}拌匀`, stirFry:p=>`加入${p.desc}翻炒`, rinseCold:()=>`冷水冲洗`, add:p=>`加入${p.desc}`, pourCup:()=>`加热水至刻度线`, wait:()=>`盖上等待`, finish:()=>`完成，装碗加配料。` }, egg:{soft:'溏心：沸腾后2–3分钟加入', hard:'全熟：一开始加入'}
+      },
+      'fr-FR':{title:'Minuteur de Ramen 🍜',dev:'Développeur : B.C. Kim',
+        labels:{lang:'① Choisir la langue / TTS',ramen:'② Choisir le ramen',heat:'③ Source de chaleur',topping:'④ Choisir les garnitures',progress:'Avancement',detail:'Afficher les étapes',heatNote:'※ L’induction réduit l’ébullition d’environ 20 %'},
+        ui:{ start:'Démarrer', pause:'Pause', reset:'Réinitialiser', next:'Étape suivante', done:'Terminé !', step:'Étape actuelle', ttsOn:'🔊 TTS ON', ttsOff:'🔇 TTS OFF' },
+        heat:{gas:'Gaz',ind:'Induction'}, toppings:{rice:'Gâteau de riz',onion:'Ciboule',cheese:'Fromage',soft:'Œuf mollet',hard:'Œuf dur'},
+        ramenNames:{shin:'Shin Ramyun',neoguri:'Neoguri',chapagetti:'Chapagetti',jjawang:'Jjawang',ansin:'Anseongtangmyun',buldak:'Buldak',samyang:'Samyang Ramen',jin:'Jin Ramen',bibim:'Bibim Men',wang:'Bol King (Cup)'},
+        step:{ boil:w=>`Faire bouillir ${w.water||''} d’eau`, cookSoup:p=>`Ajouter ${p.desc} et cuire`, cookSoupRange:p=>`Cuire nouilles + soupe (${p.min}–${p.max} min)`, cookNoodle:p=>`Cuire ${p.desc}`, drainKeep:p=>`Égoutter, garder ${p.left} d’eau`, mixDry:p=>`Ajouter ${p.desc} et mélanger`, stirFry:p=>`Ajouter ${p.desc} et faire sauter`, rinseCold:()=>`Rincer à l’eau froide`, add:p=>`Ajouter ${p.desc}`, pourCup:()=>`Verser l’eau jusqu’à la ligne`, wait:()=>`Attendre (couvercle fermé)`, finish:()=>`Servir et ajouter les garnitures.` }, egg:{soft:'Œuf mollet : ajouter 2–3 min après ébullition', hard:'Œuf dur : dès le début'}
+      },
+      'vi-VN':{title:'Bộ hẹn giờ nấu mì 🍜',dev:'Nhà phát triển: B.C. Kim',
+        labels:{lang:'① Chọn ngôn ngữ / TTS',ramen:'② Chọn mì',heat:'③ Nguồn nhiệt',topping:'④ Chọn topping',progress:'Tiến trình',detail:'Xem các bước',heatNote:'※ Bếp từ giảm ~20% thời gian đun sôi'},
+        ui:{ start:'Bắt đầu', pause:'Tạm dừng', reset:'Đặt lại', next:'Bước tiếp', done:'Xong!', step:'Bước hiện tại', ttsOn:'🔊 TTS BẬT', ttsOff:'🔇 TTS TẮT' },
+        heat:{gas:'Bếp ga',ind:'Bếp từ'}, toppings:{rice:'Bánh gạo',onion:'Hành lá',cheese:'Phô mai',soft:'Trứng lòng đào',hard:'Trứng chín'},
+        ramenNames:{shin:'Shin Ramyun',neoguri:'Neoguri',chapagetti:'Chapagetti',jjawang:'Jjawang',ansin:'Anseongtangmyun',buldak:'Buldak',samyang:'Samyang Ramen',jin:'Jin Ramen',bibim:'Bibim Men',wang:'Mì cốc King'},
+        step:{ boil:w=>`Đun sôi ${w.water||''} nước`, cookSoup:p=>`Cho ${p.desc} và nấu`, cookSoupRange:p=>`Nấu mì + gói súp (${p.min}–${p.max} phút)`, cookNoodle:p=>`Luộc ${p.desc}`, drainKeep:p=>`Đổ nước, chừa ${p.left}`, mixDry:p=>`Cho ${p.desc} và trộn`, stirFry:p=>`Cho ${p.desc} và xào`, rinseCold:()=>`Xả bằng nước lạnh`, add:p=>`Thêm ${p.desc}`, pourCup:()=>`Rót nước sôi đến vạch`, wait:()=>`Đậy nắp đợi`, finish:()=>`Múc ra bát và thêm topping.` }, egg:{soft:'Lòng đào: cho sau khi sôi 2–3 phút', hard:'Lòng chín: cho từ đầu'}
+      },
+      'ja-JP':{title:'ラーメン調理タイマー 🍜',dev:'開発者: B.C. Kim',
+        labels:{lang:'① 言語 / 音声',ramen:'② ラーメンを選択',heat:'③ 加熱方法',topping:'④ トッピング',progress:'進行状況',detail:'手順を表示',heatNote:'※ IHは沸騰時間を約20%短縮'},
+        ui:{ start:'開始', pause:'一時停止', reset:'リセット', next:'次の工程', done:'完成!', step:'現在の工程', ttsOn:'🔊音声ON', ttsOff:'🔇音声OFF' },
+        heat:{gas:'ガスコンロ',ind:'IH'}, toppings:{rice:'トック',onion:'ねぎ',cheese:'チーズ',soft:'半熟卵',hard:'固ゆで卵'},
+        ramenNames:{shin:'辛ラーメン',neoguri:'ノグリ',chapagetti:'チャパゲティ',jjawang:'チャワン',ansin:'安城湯麺',buldak:'プルダック',samyang:'サムヤンラーメン',jin:'ジンラーメン',bibim:'ビビン麺',wang:'ワンドゥッコン(カップ)'},
+        step:{ boil:w=>`${w.water||''} の水を沸かす`, cookSoup:p=>`${p.desc} を入れて煮る`, cookSoupRange:p=>`麺+スープ（${p.min}〜${p.max}分）`, cookNoodle:p=>`${p.desc} をゆでる`, drainKeep:p=>`湯を切り、${p.left} 残す`, mixDry:p=>`${p.desc} を混ぜる`, stirFry:p=>`${p.desc} を加えて炒める`, rinseCold:()=>`冷水でしめる`, add:p=>`${p.desc} を加える`, pourCup:()=>`線までお湯を注ぐ`, wait:()=>`ふたをして待つ`, finish:()=>`器に盛り、トッピングをのせる。` }, egg:{soft:'半熟：沸騰後2〜3分で投入', hard:'固ゆで：最初に投入'}
+      },
+      'es-ES':{title:'Temporizador de ramen 🍜',dev:'Desarrollador: B.C. Kim',
+        labels:{lang:'① Idioma / TTS',ramen:'② Elige ramen',heat:'③ Fuente de calor',topping:'④ Toppings',progress:'Progreso',detail:'Ver pasos',heatNote:'※ La inducción reduce ~20% el hervor'},
+        ui:{ start:'Iniciar', pause:'Pausa', reset:'Reiniciar', next:'Siguiente paso', done:'¡Listo!', step:'Paso actual', ttsOn:'🔊 TTS ON', ttsOff:'🔇 TTS OFF' },
+        heat:{gas:'Gas',ind:'Inducción'}, toppings:{rice:'Pastel de arroz',onion:'Cebolleta',cheese:'Queso',soft:'Huevo medio',hard:'Huevo duro'},
+        ramenNames:{shin:'Shin Ramyun',neoguri:'Neoguri',chapagetti:'Chapagetti',jjawang:'Jjawang',ansin:'Anseongtangmyun',buldak:'Buldak',samyang:'Samyang Ramen',jin:'Jin Ramen',bibim:'Bibim Men',wang:'Tazón King (Copa)'},
+        step:{ boil:w=>`Hervir ${w.water||''} de agua`, cookSoup:p=>`Añadir ${p.desc} y cocer`, cookSoupRange:p=>`Cocer fideos + sopa (${p.min}–${p.max} min)`, cookNoodle:p=>`Cocer ${p.desc}`, drainKeep:p=>`Escurrir y reservar ${p.left} de agua`, mixDry:p=>`Añadir ${p.desc} y mezclar`, stirFry:p=>`Añadir ${p.desc} y saltear`, rinseCold:()=>`Enjuagar con agua fría`, add:p=>`Añadir ${p.desc}`, pourCup:()=>`Verter agua caliente hasta la línea`, wait:()=>`Esperar con tapa`, finish:()=>`Servir y añadir toppings.` }, egg:{soft:'Huevo medio: añadir 2–3 min tras hervir', hard:'Huevo duro: al inicio'}
+      },
+      'de-DE':{title:'Ramen-Timer 🍜',dev:'Entwickler: B.C. Kim',
+        labels:{lang:'① Sprache / TTS',ramen:'② Ramen wählen',heat:'③ Wärmequelle',topping:'④ Toppings wählen',progress:'Fortschritt',detail:'Schritte anzeigen',heatNote:'※ Induktion verkürzt die Kochzeit ~20%'},
+        ui:{ start:'Start', pause:'Pause', reset:'Zurücksetzen', next:'Nächster Schritt', done:'Fertig!', step:'Aktueller Schritt', ttsOn:'🔊 TTS AN', ttsOff:'🔇 TTS AUS' },
+        heat:{gas:'Gasherd',ind:'Induktion'}, toppings:{rice:'Reiskuchen',onion:'Lauchzwiebel',cheese:'Käse',soft:'Weiches Ei',hard:'Hartes Ei'},
+        ramenNames:{shin:'Shin Ramyun',neoguri:'Neoguri',chapagetti:'Chapagetti',jjawang:'Jjawang',ansin:'Anseongtangmyun',buldak:'Buldak',samyang:'Samyang Ramen',jin:'Jin Ramen',bibim:'Bibim Men',wang:'King-Becher'},
+        step:{ boil:w=>`${w.water||''} Wasser zum Kochen bringen`, cookSoup:p=>`${p.desc} zugeben und kochen`, cookSoupRange:p=>`Nudeln + Suppe (${p.min}–${p.max} Min)`, cookNoodle:p=>`${p.desc} kochen`, drainKeep:p=>`${p.left} Wasser behalten`, mixDry:p=>`${p.desc} zugeben und mischen`, stirFry:p=>`${p.desc} zugeben und anbraten`, rinseCold:()=>`Mit kaltem Wasser abschrecken`, add:p=>`${p.desc} hinzufügen`, pourCup:()=>`Heißes Wasser bis zur Linie`, wait:()=>`Mit Deckel warten`, finish:()=>`Servieren und Toppings ergänzen.` }, egg:{soft:'Weich: 2–3 Min nach dem Kochen', hard:'Hart: gleich am Anfang'}
+      }
+    };
+
+    // ===== 상태 =====
+    let state={lang:'ko-KR',tts:true,heat:'gas',ramen:null,toppings:new Set(),egg:null,steps:[],stepIndex:0,running:false,remaining:0};
+
+    // ===== 유틸 =====
+    const qs=(s)=>document.querySelector(s);
+    const format=(s)=>{const m=Math.max(0,Math.floor(s));const mm=String(Math.floor(m/60)).padStart(2,'0');const ss=String(m%60).padStart(2,'0');return `${mm}:${ss}`};
+    function i18n(){return I18N[state.lang]||I18N['en-US']}
+    function speak(txt){ if(!state.tts) return; const u=new SpeechSynthesisUtterance(txt); u.lang=state.lang; const vs=speechSynthesis.getVoices(); const v=vs.find(v=>v.lang===state.lang)||vs.find(v=>v.lang.startsWith(state.lang.slice(0,2)))||vs[0]; if(v) u.voice=v; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+
+    function heatAdjusted(steps){ const f=state.heat==='ind'?0.8:1.0; return steps.map(s=> s.type==='boil'&&s.sec?{...s,sec:Math.max(30,Math.round(s.sec*f))}:{...s}); }
+    function composeSteps(base){ const eggNote= state.egg?{type:'add',sec:0,params:{desc: (state.egg==='soft'?i18n().egg.soft:i18n().egg.hard)}}:null; const arr=[...base.steps]; if(eggNote) arr.splice(1,0,eggNote); return heatAdjusted(arr); }
+
+    // ===== 언어 버튼 구성 =====
+    const LANGS=[["ko-KR","한국어"],["en-US","English"],["zh-CN","中文"],["fr-FR","Français"],["vi-VN","Tiếng Việt"],["ja-JP","日本語"],["es-ES","Español"],["de-DE","Deutsch"]];
+    const langButtons=qs('#langButtons');
+    LANGS.forEach(([code,label])=>{ const b=document.createElement('button'); b.className='btn lang single'; b.dataset.lang=code; b.textContent=label; langButtons.appendChild(b); });
+
+    // ===== 라면 버튼 구성 =====
+    const RAMEN_IDS=['shin','neoguri','chapagetti','jjawang','ansin','buldak','samyang','jin','bibim','wang'];
+    const ramenButtons=qs('#ramenButtons');
+    function renderRamenButtons(){ ramenButtons.innerHTML=''; RAMEN_IDS.forEach(id=>{ const b=document.createElement('button'); b.className='btn ramen single'; b.dataset.ramen=id; b.textContent=i18n().ramenNames[id]||id; if(state.ramen===id) b.classList.add('selected'); ramenButtons.appendChild(b); }); }
+
+    // ===== 공통 선택 표시 =====
+    function setSingleSelected(selector, target){ document.querySelectorAll(selector).forEach(el=>el.classList.remove('selected')); target.classList.add('selected'); }
+    function toggleMultiSelected(target){ target.classList.toggle('selected'); }
+
+    // ===== 이벤트 바인딩 =====
+    document.addEventListener('click',(e)=>{
+      const t=e.target;
+      if(t.matches('.lang.single')){ state.lang=t.dataset.lang; document.documentElement.lang=state.lang.substring(0,2); setSingleSelected('.lang.single', t); applyTranslations(); if(state.ramen){ state.steps=composeSteps(RECIPES[state.ramen]); renderSteps(); updateCurrent(true);} renderStatus(); }
+      if(t.matches('#toggleTts')){ state.tts=!state.tts; t.textContent = state.tts? i18n().ui.ttsOn : i18n().ui.ttsOff; renderStatus(); }
+      if(t.matches('.btn.ramen')){ state.ramen=t.dataset.ramen; setSingleSelected('.btn.ramen', t); state.steps=composeSteps(RECIPES[state.ramen]); state.stepIndex=0; state.running=false; state.remaining=0; renderSteps(); updateCurrent(); renderStatus(); }
+      if(t.matches('.heat.single')){ state.heat=t.dataset.heat; setSingleSelected('.heat.single', t); // update heat labels (already translated via applyTranslations)
+        if(state.ramen){ state.steps=composeSteps(RECIPES[state.ramen]); renderSteps(); updateCurrent(true);} renderStatus(); }
+      if(t.matches('.topping.multi')){ const key=t.dataset.top; state.toppings.has(key)?state.toppings.delete(key):state.toppings.add(key); toggleMultiSelected(t); renderStatus(); }
+      if(t.matches('.egg.single')){ state.egg=t.dataset.egg; setSingleSelected('.egg.single', t); if(state.ramen){ state.steps=composeSteps(RECIPES[state.ramen]); renderSteps(); updateCurrent(true);} renderStatus(); }
+      if(t.matches('#startBtn')) startTimer();
+      if(t.matches('#pauseBtn')) state.running=false;
+      if(t.matches('#resetBtn')){ state.running=false; state.remaining=0; qs('#timer').textContent='00:00'; }
+      if(t.matches('#nextBtn')) nextStep();
+      if(t.matches('#plus10')){ state.remaining+=10; qs('#timer').textContent=format(state.remaining); }
+      if(t.matches('#minus10')){ state.remaining=Math.max(0,state.remaining-10); qs('#timer').textContent=format(state.remaining); }
+    });
+
+    // ===== 번역을 UI에 적용 =====
+    function applyTranslations(){
+      const t=i18n();
+      qs('#title').textContent=t.title; qs('#dev').textContent=t.dev;
+      qs('#langLabel').textContent=t.labels.lang; qs('#ramenLabel').textContent=t.labels.ramen; qs('#heatLabel').textContent=t.labels.heat; qs('#topLabel').textContent=t.labels.topping; qs('#detailSummary').textContent=t.labels.detail; qs('#heatNote').textContent=t.labels.heatNote;
+      qs('#gasBtn').textContent=t.heat.gas; qs('#indBtn').textContent=t.heat.ind; qs('#toggleTts').textContent = state.tts? t.ui.ttsOn : t.ui.ttsOff;
+      qs('#startBtn').textContent=t.ui.start; qs('#pauseBtn').textContent=t.ui.pause; qs('#resetBtn').textContent=t.ui.reset; qs('#nextBtn').textContent=t.ui.next;
+      // toppings
+      qs('#t1').textContent=t.toppings.rice; qs('#t2').textContent=t.toppings.onion; qs('#t3').textContent=t.toppings.cheese; qs('#e1').textContent=t.toppings.soft; qs('#e2').textContent=t.toppings.hard;
+      // ramen buttons need re-render for names
+      renderRamenButtons();
+    }
+
+    function renderStatus(){ const row=qs('#statusRow'); row.innerHTML=''; const add=(txt)=>{const s=document.createElement('span'); s.className='pill'; s.textContent=txt; row.appendChild(s)}; if(state.ramen) add(i18n().ramenNames[state.ramen]); add(i18n().heat[state.heat]); if(state.toppings.size){ const list=[...state.toppings].map(k=> i18n().toppings[k]).join(', '); add(list? (state.lang==='ko-KR'?`토핑: ${list}`:`Toppings: ${list}`):''); } if(state.egg) add(state.egg==='soft'? i18n().toppings.soft : i18n().toppings.hard); add(state.tts? i18n().ui.ttsOn : i18n().ui.ttsOff); }
+
+    function renderSteps(){ const ol=qs('#stepList'); ol.innerHTML=''; state.steps.forEach((st,i)=>{ const li=document.createElement('li'); const label=(i18n().step[st.type]||(()=>st.type))(st.params||{}); li.textContent=`${i+1}. ${label}` + (st.sec?` — ${format(st.sec)}`:''); ol.appendChild(li); }); }
+
+    function updateCurrent(skipSpeak){ if(!state.ramen){ qs('#output').textContent= state.lang==='ko-KR'? '라면을 선택하세요.' : 'Please select a ramen.'; return; } const st=state.steps[state.stepIndex]; const label=(i18n().step[st.type]||(()=>st.type))(st.params||{}); const heat=i18n().heat[state.heat]; qs('#output').textContent=`${i18n().ui.step}: ${label} · (${heat})`; qs('#timer').textContent=format(st.sec||0); state.remaining=st.sec||0; state.running=false; if(!skipSpeak) speak(qs('#output').textContent); }
+
+    function startTimer(){ if(!state.ramen){ speak(state.lang==='ko-KR'?'라면을 먼저 선택하세요.':'Please select a ramen first.'); return;} state.running=true; }
+    function nextStep(){ if(!state.ramen) return; if(state.stepIndex < state.steps.length-1){ state.stepIndex++; updateCurrent(); } else { speak(i18n().ui.done); } }
+
+    setInterval(()=>{ if(!state.running) return; if(state.remaining>0){ state.remaining--; qs('#timer').textContent=format(state.remaining); if(state.remaining===0){ state.running=false; speak('띵! '+i18n().ui.done+' — '+i18n().ui.next); } } },1000);
+
+    // 초기 세팅
+    applyTranslations();
+    // 기본 선택 표시(한국어, 가스)
+    document.addEventListener('DOMContentLoaded',()=>{
+      const ko = document.querySelector('.lang.single[data-lang="ko-KR"]'); if(ko) ko.classList.add('selected');
+      const gas = document.querySelector('.heat.single[data-heat="gas"]'); if(gas) gas.classList.add('selected');
+    });
+  </script>
+</body>
+</html>
